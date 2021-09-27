@@ -1,32 +1,55 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>
+  <v-app>
+    <v-app-bar app dark dense color="blue">
+
+      <v-toolbar-title style="cursor: pointer" @click="$router.push('/')">YiJing</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+
+      <v-btn text :to="{ name: 'About' }" class="ma-2">Что это</v-btn>
+
+      <div v-if="isAuth">
+        <v-btn text :to="{ name: 'Profile' }" class="ma-2">Гадать</v-btn>
+        <v-btn text @click="logout">Выход</v-btn>
+      </div>
+
+      <v-btn text :to="{ name: 'Login' }" v-else>Войти</v-btn>
+
+    </v-app-bar>
+
+    <v-main>
+      <router-view/>
+    </v-main>
+  </v-app>
 </template>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
 
-#nav {
-  padding: 30px;
-}
+import axios from "axios";
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
+export default {
+  name: 'App',
+  computed: {
+    isAuth() {
+      return this.$store.getters.isAuth;
+    }
+  },
+  methods: {
+    logout() {
+      axios.get('/auth/logout').then(() => {
+        this.$store.state.isAuth = false;
+        localStorage.removeItem('AccessToken');
+        this.$router.push({name: 'Home'});
+      }).catch(() => {
 
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
-</style>
+      });
+    }
+  },
+  beforeCreate() {
+    if (localStorage.getItem('AccessToken')) {
+      this.$store.state.isAuth = true;
+    }
+    this.$store.dispatch("initState");
+  }
+};
+</script>
